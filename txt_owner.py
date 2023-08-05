@@ -1,37 +1,41 @@
 import streamlit as st
-import hashlib
 import dns.resolver
+import hashlib
 
-#pip install streamlit
-#pip install dnspython
-#pip install hashlib
+st.title("Verificação de Propriedade de Domínio")
 
-def generate_hash(text: str) -> str:
-    return hashlib.sha256(text.encode()).hexdigest()
+st.subheader("Gerar hash de verificação")
+text = st.text_input("Entre com o texto")
 
-def check_domain_ownership(domain: str, expected_hash: str) -> bool:
-    try:
-        txt_records = dns.resolver.resolve(domain, 'TXT')
-        for txt_record in txt_records:
-            if expected_hash in txt_record.strings[0].decode():
-                return True
-        return False
-    except:
-        st.write(f"Não foi possível verificar o domínio: {domain}")
-        return False
+# Inicializa hex_dig que é onde gera a Hash em sha256
+if "hex_dig" not in st.session_state:
+    st.session_state.hex_dig = None
 
-st.title('Verificador de Propriedade de Domínio')
+if st.button("Gerar Hash"):
+    hash_object = hashlib.sha256(text.encode())
+    st.session_state.hex_dig = hash_object.hexdigest()
+    st.write(st.session_state.hex_dig)
 
-text_to_hash = st.text_input('Texto para gerar hash:')
-domain_to_check = st.text_input('Domínio para verificar:')
-check_button_clicked = st.button('Verificar Domínio')
+st.subheader("Verificar domínios")
+domains = st.text_area("Entre com os domínios (um por linha)")
 
-if check_button_clicked and domain_to_check and text_to_hash:
-    hash_value = generate_hash(text_to_hash)
-    st.write(f'Hash gerado: {hash_value}')
-    
-    ownership = check_domain_ownership(domain_to_check, hash_value)
-    if ownership:
-        st.write(f'O domínio {domain_to_check} passou na verificação de propriedade.')
+if st.button("Verificar Domínios"):
+    if st.session_state.hex_dig is None:
+        st.error("Por favor, gere uma hash primeiro.")
     else:
-        st.write(f'O domínio {domain_to_check} não passou na verificação de propriedade.')
+        domains = domains.split("\n")  # Dividir por nova linha pra poder verificar varios domains de uma vez
+        for domain in domains:
+            try:
+                answers = dns.resolver.resolve(domain, 'TXT')
+                for rdata in answers:
+                    for txt_string in rdata.strings:
+                        if st.session_state.hex_dig in txt_string.decode():
+                            st.success(f"A hash foi encontrada no domínio: {domain}")
+                            break
+                    else:
+                        continue
+                    break
+                else:
+                    st.error(f"A hash não foi encontrada no domínio: {domain}")
+            except:
+                st.error(f"Não foi possível verificar o domínio: {domain}")
