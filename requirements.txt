@@ -1,3 +1,2 @@
 streamlit
-dnspython
-python3-dnspython
+dnspython==2.3.0
