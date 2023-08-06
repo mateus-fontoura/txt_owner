@@ -40,7 +40,7 @@ col1, col2 = st.columns(2)
 
 # Campos de entrada side by side
 ticket_id = col1.text_input("Ticket ID (5 dígitos numéricos)", placeholder="Ex.: 12345")
-domain = col2.text_input("Domínio(primeiro, se multiplos", placeholder="Ex.: examplo.com")
+domain = col2.text_input("Domínio(primeiro, se multiplos", placeholder="Ex.: exemplo.com.br")
 
 # Verifica se o Ticket ID é válido
 if ticket_id and not re.fullmatch(r'\d{5}', ticket_id):
