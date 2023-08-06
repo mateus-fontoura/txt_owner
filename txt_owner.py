@@ -63,6 +63,10 @@ if st.button("Gerar Hash") and ticket_id and domain:
 st.subheader("Etapa 2: Verificar domínios")
 domains = st.text_area("Entre com os domínios (um por linha)")
 
+
+if st.session_state.get('hex_dig'):
+    st.markdown(f"🔒 Hash atual: `{st.session_state.hex_dig}`")
+
 if st.button("Verificar Domínios"):
     if not st.session_state.get('hex_dig'):
         st.error("Por favor, gere uma hash primeiro.")
