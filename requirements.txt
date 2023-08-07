@@ -1,3 +1,4 @@
 streamlit
+pyperclip==1.8.1
 dnspython==2.3.0
-pyperclip==1.8.2
+
