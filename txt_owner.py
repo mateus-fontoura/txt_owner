@@ -2,6 +2,8 @@ import streamlit as st
 import dns.resolver
 import hashlib
 import re
+import streamlit.components.v1 as components
+import pyperclip
 
 st.markdown("""
     <style>
@@ -16,6 +18,7 @@ st.markdown("""
         }
     </style>
     """, unsafe_allow_html=True)
+
 
 # Função para verificar o domínio
 def check_domain(domain, hash_value):
@@ -40,7 +43,7 @@ col1, col2 = st.columns(2)
 
 # Campos de entrada side by side
 ticket_id = col1.text_input("Ticket ID (5 dígitos numéricos)", placeholder="Ex.: 12345")
-domain = col2.text_input("Domínio(primeiro, se multiplos", placeholder="Ex.: exemplo.com.br")
+domain = col2.text_input("Domínio(primeiro, se multiplos", placeholder="Ex.: examplo.com")
 
 # Verifica se o Ticket ID é válido
 if ticket_id and not re.fullmatch(r'\d{5}', ticket_id):
@@ -67,7 +70,16 @@ domains = st.text_area("Entre com os domínios (um por linha)")
 if st.session_state.get('hex_dig'):
     st.markdown(f"🔒 Hash atual: `{st.session_state.hex_dig}`")
 
-if st.button("Verificar Domínios"):
+
+
+#https://dns.google/resolve?name={domain}&type=TXT
+
+
+# Organiza os botões em colunas
+button_col1, button_col2, button_col3 = st.columns(3)
+
+# Botão para verificar os domínios
+if button_col1.button("Verificar domínios"):
     if not st.session_state.get('hex_dig'):
         st.error("Por favor, gere uma hash primeiro.")
     else:
@@ -85,6 +97,32 @@ if st.button("Verificar Domínios"):
                     results_col2.write(result)
         st.success('Verificação concluída!')
 
-if st.button("Limpar"):
+# Botão para exportar o Curl
+if button_col2.button('Exportar Curl'):
+    if 'hex_dig' in st.session_state and domain:
+        # Códigos de escape ANSI para cores
+        green = '\\033[32m'
+        red = '\\033[31m'
+        reset = '\\033[0m'
+
+        # Linha de caracteres com tamanho fixo
+        line = '=' * 40
+
+        # Cria o comando curl em uma única linha com cores e formatação aprimorada
+        curl_command = (
+            'clear && '  # Limpa a tela do terminal
+            f'curl --silent "https://dns.google/resolve?name={domain}&type=TXT" | '
+            f'grep "{st.session_state.hex_dig}" > /dev/null && '
+            f'echo "\\n{green}{line}\\nHash encontrada: {st.session_state.hex_dig}\\n{line}{reset}\\n" || '
+            f'echo "\\n{red}{line}\\nHash não encontrada\\n{line}{reset}\\n"'
+        )
+
+        curl_content = curl_command
+        pyperclip.copy(curl_content)
+
+
+
+# Botão para limpar
+if button_col3.button("Limpar"):
     st.session_state.clear()
     st.experimental_rerun()
