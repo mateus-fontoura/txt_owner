@@ -3,7 +3,6 @@ import dns.resolver
 import hashlib
 import re
 import streamlit.components.v1 as components
-import pyperclip
 
 st.markdown("""
     <style>
@@ -18,7 +17,6 @@ st.markdown("""
         }
     </style>
     """, unsafe_allow_html=True)
-
 
 # Função para verificar o domínio
 def check_domain(domain, hash_value):
@@ -117,10 +115,27 @@ if button_col2.button('Exportar Curl'):
             f'echo "\\n{red}{line}\\nHash não encontrada\\n{line}{reset}\\n"'
         )
 
-        curl_content = curl_command
-        pyperclip.copy(curl_content)
+        # HTML para criar uma caixa com o comando curl e um botão de copiar
+        copy_box_html = f'''
+        <div style="position: relative; white-space: pre-wrap; overflow-x: auto; border: 1px solid #ccc; padding: 10px;">
+            <code id="curlCommand">{curl_command}</code>
+            <button onclick="copyCurl()" style="position: absolute; right: 10px; top: 10px;">Copiar</button>
+        </div>
+        <script>
+            function copyCurl() {{
+                var textArea = document.createElement('textarea');
+                textArea.value = document.getElementById('curlCommand').textContent;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('Comando copiado para a área de transferência!');
+            }}
+        </script>
+        '''
 
-
+        # Imprime a caixa com o botão de copiar
+        components.html(copy_box_html, height=100)
 
 # Botão para limpar
 if button_col3.button("Limpar"):
